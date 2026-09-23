@@ -1,0 +1,51 @@
+Table member{
+  id uuid [primary key]
+  username string
+}
+
+Table wallet {
+  id uuid [primary key]
+  memberId uuid [not null, ref: > member.id]
+  balance decimal(36,18)
+}
+
+enum TransactionStatus{
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+Table transaction {
+  id uuid [primary key]
+  status TransactionStatus [not null, default: 'PENDING']
+  memberId uuid [not null, ref: > member.id]
+  pspRef string
+  createdAt datetimeoffset
+}
+
+enum WalletTransactionType {
+  DESPOIT
+  WITHDRAW
+}
+
+Table waller_txs {
+  id uuid [primary key]
+  walletId uuid [not null, ref: > wallet.id]
+  balance decimal(36,18) [not null]
+  transactionType WalletTransactionType [not null]
+  createdAt datetimeoffset
+}
+
+Table wager {
+  id uuid [primary key]
+  memberId uuid [not null, ref: > member.id]
+  amount decimal(36,18) [not null]
+  status TransactionStatus [not null, default: 'PENDING']
+  createdAt datetimeoffset
+}
+
+Table turnover {
+  id uuid [primary key]
+  requriment decimal(36,18)
+  current_total decimal(36,18)
+}
