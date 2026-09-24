@@ -37,31 +37,33 @@
 
 ## Feature A3 — Wager (`POST /wallets/:walletId/wagers`)
 
-- [ ] Zod schema: `amount` (positive decimal string)
-- [ ] Service: `SELECT wallets FOR UPDATE`, check `balance >= amount`
-- [ ] Sufficient funds: `UPDATE balance -= amount`, insert `wallet_txs` (negative), insert `wagers`
-- [ ] Insufficient funds: reject `422`, no record created
-- [ ] Mounted in `src/app.ts`
-- [ ] Test: successful wager debits the right balance + writes a ledger entry
-- [ ] Test: rejects on insufficient balance
-- [ ] Test: 2 **concurrent** wagers don't overdraw the wallet ⚠️ required
+- [x] Zod schema: `amount` (positive decimal string)
+- [x] Service: `SELECT wallets FOR UPDATE`, check `balance >= amount`
+- [x] Sufficient funds: `UPDATE balance -= amount`, insert `wallet_txs` (negative), insert `wagers`
+- [x] Insufficient funds: reject `422`, no record created
+- [x] Mounted in `src/app.ts`
+- [x] Test: successful wager debits the right balance + writes a ledger entry
+- [x] Test: rejects on insufficient balance, no record created
+- [x] Test: 2 **concurrent** wagers don't overdraw the wallet ⚠️ required
+- [x] Test: rejects an unknown `walletId` → `404`
 
 ## Feature A4 — Withdrawal + turnover lock (`POST /withdrawals`)
 
-- [ ] Zod schema: `memberId` (uuid), `amount` (positive decimal string)
-- [ ] Service: `SELECT wallets FOR UPDATE`
-- [ ] Compute `required = Σ(amount × turnoverMultiplier)` from `Completed` deposits
-- [ ] Compute `accrued = Σ(amount)` from all wagers
-- [ ] `accrued < required` → `422 { outstandingTurnover }`
-- [ ] `accrued >= required` and sufficient balance → debit, insert `wallet_txs` (negative), insert `funding_transactions` (`type=withdrawal, status=Pending`)
-- [ ] Mounted in `src/app.ts`
-- [ ] Test: blocks withdrawal when turnover is insufficient, body reports the correct outstanding amount
-- [ ] Test: allows withdrawal once turnover is sufficient (after enough wagering)
-- [ ] Test: rejects if balance is insufficient even when turnover is sufficient
+- [x] Zod schema: `memberId` (uuid), `amount` (positive decimal string)
+- [x] Service: `SELECT wallets FOR UPDATE`
+- [x] Compute `required = Σ(amount × turnoverMultiplier)` from `Completed` deposits (raw SQL `SUM(...)::text`, not `Model.sum()`, to avoid JS `number` precision loss)
+- [x] Compute `accrued = Σ(amount)` from all wagers (same raw-SQL approach)
+- [x] `accrued < required` → `422 { outstandingTurnover }`
+- [x] `accrued >= required` and sufficient balance → debit, insert `wallet_txs` (negative), insert `funding_transactions` (`type=withdrawal, status=Pending`)
+- [x] Mounted in `src/app.ts`
+- [x] Test: blocks withdrawal when turnover is insufficient, body reports the correct outstanding amount
+- [x] Test: allows withdrawal once turnover is sufficient (after enough wagering, plus a second multiplier=0 deposit to leave spendable balance)
+- [x] Test: rejects if balance is insufficient even when turnover is sufficient
+- [x] Test: rejects an unknown `memberId` → `404`
 
 ## Wrap-up (do last, not tied to any single feature)
 
-- [ ] Run the full `npm test` suite green
-- [ ] Verify the invariant: `SUM(wallet_txs.amount) == wallets.balance` (a test or a manual check script)
-- [ ] Finish `DECISIONS.md` #8 (known gaps) and #9 (AI disclosure for the code)
-- [ ] Write `DESIGN-PSP.md` (Part B)
+- [x] Run the full `npm test` suite green (22/22 across all 6 test suites)
+- [x] Verify the invariant: `SUM(wallet_txs.amount) == wallets.balance` (`test/ledgerReconciliation.test.ts`)
+- [x] `DECISIONS.md` #8 (known gaps) and #9 (AI disclosure for the code)
+- [x] Write `DESIGN-PSP.md` (Part B)

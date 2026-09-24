@@ -5,6 +5,8 @@ import { healthRouter } from './routes/health';
 import { membersRouter } from './routes/members';
 import { depositsRouter } from './routes/deposits';
 import { pspCallbacksRouter } from './routes/pspCallbacks';
+import { wagersRouter } from './routes/wagers';
+import { withdrawalsRouter } from './routes/withdrawals';
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof ZodError) {
@@ -28,6 +30,8 @@ export function createApp() {
   app.use('/members', membersRouter);
   app.use('/deposits', depositsRouter);
   app.use('/psp/callbacks', pspCallbacksRouter);
+  app.use('/wallets/:walletId/wagers', wagersRouter);
+  app.use('/withdrawals', withdrawalsRouter);
 
   app.use(errorHandler);
   return app;

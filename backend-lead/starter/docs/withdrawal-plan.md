@@ -1,6 +1,6 @@
 # Plan — A4: Withdrawal + turnover lock (`POST /withdrawals`)
 
-> Design written before coding. Not implemented yet — `withdrawal-code-plan.md` will be written before creating the code files, pending review. Shared schema/ERD/state machine: see `architecture.md`.
+> Design written before coding. Implemented — see `withdrawal-code-plan.md` for the real code. Shared schema/ERD/state machine: see `architecture.md`.
 
 ## Requirement (summarized from `TASK.md`)
 

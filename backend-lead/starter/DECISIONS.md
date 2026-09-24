@@ -28,7 +28,7 @@ Similar to problem 2 but on the debit side: without locking, two 10.00 wagers ru
 
 I initially planned separate tables for deposits and withdrawals, but both need exactly the same state machine (`Pending → Completed / Failed`) and the same set of operations (create, wait, resolve). Splitting them would only duplicate the state-machine handling in two places for no clear benefit.
 
-**Solution:** merge both into a single `funding_transactions` table, with a `type` column (`deposit | withdrawal`) to distinguish direction. `psp_ref` is only required for deposits — withdrawals don't go through the PSP in this exercise's scope. This is already reflected in the schema/migrations that ship with Foundation, even though the withdrawal endpoint itself isn't built yet.
+**Solution:** merge both into a single `funding_transactions` table, with a `type` column (`deposit | withdrawal`) to distinguish direction. `psp_ref` is only required for deposits — withdrawals don't go through the PSP in this exercise's scope.
 
 ## 5. The PSP reports an `amount` that differs from what I recorded when the deposit was created — which one do I trust?
 
@@ -57,11 +57,17 @@ I initially planned to reuse one state machine across all three transaction type
 
 **Solution:** no `status` column on `wager` — a state machine for an operation that's always synchronous is just an unnecessary abstraction.
 
+## 8. What's left / known gaps
+
+- [ ] `:walletId` in `POST /wallets/:walletId/wagers` isn't validated as a UUID before hitting the service — an invalid UUID surfaces as a raw Postgres error through the generic `500` handler instead of a clean `400`. Same pre-existing pattern as `GET /members/:memberId/wallet`, so not a regression I introduced, but worth fixing with more time.
+- [x] Ledger invariant `SUM(wallet_txs.amount) == wallets.balance` is now asserted end-to-end across a mixed deposit/wager/withdrawal sequence (`test/ledgerReconciliation.test.ts`).
+- [x] `DESIGN-PSP.md` (Part B) written.
+
 ## 9. AI tool disclosure
 
-I used **Claude Code (Claude Sonnet 5, via CLI)** for the following, scoped to what's covered by this document (Foundation, A1, A2):
+I used **Claude Code (Claude Sonnet 5, via CLI)** for the following:
 
 - Discussed architecture & schema: reviewed the `schema.dbml` I drafted myself, and it pointed out gaps (missing `amount`/`type` columns on the transaction table, no ledger entry for wagers, etc.) — I made the final call on every decision above after being asked directly about each ambiguous point.
 - Drew sequence diagrams / a state diagram / an ERD illustrating the business flow, split per feature: `docs/architecture.md` (shared schema/ERD/state machine), `docs/create-deposit-plan.md`, `docs/psp-callback-plan.md`, `docs/wager-plan.md`, `docs/withdrawal-plan.md`.
 - Wrote a feature checklist (`docs/CHECKLIST.md`).
-- Wrote a code plan with the actual code for A1/A2 to review before creating the files (`docs/create-deposit-code-plan.md`, `docs/psp-callback-code-plan.md`) — the same process applies to A3/A4 when I get to them.
+- Wrote a code plan with the actual code for every feature (A1-A4) to review before creating the files (`docs/create-deposit-code-plan.md`, `docs/psp-callback-code-plan.md`, `docs/wager-code-plan.md`, `docs/withdrawal-code-plan.md`) — I read and approved each plan before the corresponding `src/` files were created.
